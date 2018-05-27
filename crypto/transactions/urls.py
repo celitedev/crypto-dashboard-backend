@@ -4,6 +4,7 @@ from transactions import views
 
 urlpatterns = [
     url(r'^users/$', views.UserList.as_view()),
+    url(r'^users/balance$', views.get_balance),
     url(r'^users/(?P<pk>[0-9]+)/$', views.UserDetail.as_view()),
     url(r'^transactions/$', views.TransactionList.as_view()),
     url(r'^transactions/(?P<pk>[0-9]+)/$', views.TransactionDetail.as_view()),

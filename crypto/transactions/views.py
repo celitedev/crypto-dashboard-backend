@@ -34,6 +34,13 @@ def make_transaction(request):
         return JsonResponse(serializer.data, status=status.HTTP_201_CREATED)
     return JsonResponse(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+@api_view(['GET'])
+@permission_classes([permissions.IsAuthenticatedOrReadOnly,])
+def get_balance(request):
+    user = UserSerializer(User.objects.get(username=request.user))
+    balance = UserBalance.objects.get(user=user.data['id'])
+    return JsonResponse({"balance": balance.balance}, status=status.HTTP_200_OK)
+
 class UserList(generics.ListAPIView):
     queryset = User.objects.all()
     serializer_class = UserSerializer
@@ -50,6 +57,17 @@ class TransactionList(generics.ListCreateAPIView):
 
     def perform_create(self, serializer):
         serializer.save(owner=self.request.user)
+
+    def get_queryset(self):
+        """
+        This view should return a list of all the transactions
+        for the currently authenticated user.
+        """
+        user = self.request.user
+        if user.is_anonymous:
+            return Transaction.objects.all()
+        else:
+            return Transaction.objects.filter(owner=user)
 
 
 class TransactionDetail(generics.RetrieveUpdateDestroyAPIView):
